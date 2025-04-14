@@ -18,32 +18,94 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { siteDetails } from "@/data/siteDetails";
+import { loginDetails } from "@/data/login";
+import { useSignIn, useUser, useClerk } from "@clerk/nextjs"; // Clerk hooks
+import { useRouter } from "next/navigation"; // For redirecting
+import { toast } from "sonner";
 
 // Define Zod schema for form validation
 const loginSchema = z.object({
-  matriculationNumber: z.string().min(1, "Matriculation number is required"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false); // For password visibility
+  const [isSubmitting, setIsSubmitting] = useState(false); // For loading state
+  const [error, setError] = useState(""); // For error messages
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+
+  const { isSignedIn, isLoaded: isUserLoaded } = useUser();
+  const { signIn, setActive, isLoaded: isSignInLoaded } = useSignIn(); // Clerk sign-in hook
+  const { redirectToSignIn } = useClerk(); // Clerk redirect hook
+  const router = useRouter(); // For redirecting
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      matriculationNumber: "",
+      email: "",
       password: "",
     },
   });
 
-  const onSubmit = (data: LoginFormValues) => {
+  // 2. Effects after all hooks
+  // Redirect if already signed in
+  useEffect(() => {
+    if (isUserLoaded && isSignInLoaded) {
+      if (isSignedIn) {
+        router.push("/dashboard");
+      }
+      setIsCheckingAuth(false);
+    }
+  }, [isSignedIn, isUserLoaded, isSignInLoaded, router]);
+
+  // 3. Conditional rendering (never before hooks)
+  if (isCheckingAuth) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
+  const onSubmit = async (data: z.infer<typeof loginSchema>) => {
     console.log("Login Data:", data);
     // Handle login logic here
+
+    setIsSubmitting(true); // Start loading
+    setError(""); // Clear previous errors
+
+    try {
+      // Attempt to sign in
+      if (signIn) {
+        const result = await signIn.create({
+          identifier: data.email,
+          password: data.password,
+        });
+
+        if (result.status === "complete") {
+          // Set the user as active and redirect to the dashboard
+          await setActive({ session: result.createdSessionId });
+          router.push("/dashboard");
+        }
+      } else {
+        setError("Sign-in service is unavailable.");
+      }
+    } catch (err: any) {
+      console.error("Login error:", err);
+      setError(err.errors[0].message); // Display error message
+      toast("Uh oh! Wrong password or email .", {
+        description: "Check and try again!",
+        closeButton: true,
+      });
+    } finally {
+      setIsSubmitting(false); // Stop loading
+    }
   };
 
   return (
@@ -73,11 +135,10 @@ export default function LoginPage() {
 
             <div className="w-full text-white text-start">
               <h1 className="text-2xl font-bold mb-4 lg:text-4xl">
-                Building the Future...
+                {loginDetails?.cta.title}
               </h1>
               <span className="text-lg italic leading-loose font-light">
-                Unlock a treasure trove of thousands of valuable resources at
-                your fingertips by using your MIU account.
+                {loginDetails?.cta.description}
               </span>
 
               <div className="mt-8 flex justify-start items-center gap-4">
@@ -91,9 +152,11 @@ export default function LoginPage() {
 
           {/* form */}
           <div className="mt-20 md:mt-0 bg-white rounded-t-3xl p-9 pt-20 shadow-lg w-full h-full md:pb-86 max-w-md md:max-w-md lg:max-w-xl">
-            <p className="text-blac text-sm font-light mb-2">WELCOME BACK</p>
+            <p className="text-blac text-sm font-light mb-2">
+              {loginDetails?.description}
+            </p>
             <h2 className="text-2xl font-medium mb-9 text-black">
-              Log In to your Account
+              {loginDetails?.title}
             </h2>
 
             <Form {...form}>
@@ -101,19 +164,17 @@ export default function LoginPage() {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-6"
               >
-                {/* Matriculation Number */}
+                {/* Email */}
                 <FormField
                   control={form.control}
-                  name="matriculationNumber"
+                  name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm">
-                        Matriculation Number
-                      </FormLabel>
+                      <FormLabel className="text-sm">Email</FormLabel>
                       <FormControl>
                         <Input
                           className="border border-offset1 py-6 px-2"
-                          placeholder="Enter your matriculation number"
+                          placeholder="Enter your email"
                           {...field}
                         />
                       </FormControl>
@@ -161,7 +222,11 @@ export default function LoginPage() {
                     type="submit"
                     className="mt-4 max-w-md font-semibold py-6 px-8 bg-black text-white cursor-pointer"
                   >
-                    LOG IN ➜
+                    {isSubmitting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      "LOG IN ➜"
+                    )}
                   </Button>
 
                   {/* forgot password */}

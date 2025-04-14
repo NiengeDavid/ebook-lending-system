@@ -32,10 +32,10 @@ const signUpSchema = z
   .object({
     matriculationNumber: z.string().min(1, "Matriculation number is required"),
     email: z.string().email("Invalid email address"),
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z
       .string()
-      .min(6, "Confirm Password must be at least 6 characters"),
+      .min(8, "Confirm Password must be at least 8 characters"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ["confirmPassword"],
@@ -62,9 +62,10 @@ export default function SignUpPage() {
     },
   });
 
-  const onSubmit = async (data: SignUpFormValues) => {
+  const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
     console.log("Form Data:", data);
     // Handle form submission logic here
+    setIsSubmitting(true);
 
     if (!isLoaded) return;
 
@@ -143,7 +144,7 @@ export default function SignUpPage() {
           </div>
 
           {/* form */}
-          <div className="mt-20 md:mt-0 bg-white rounded-t-3xl p-9 pt-20 shadow-lg w-full h-full md:pb-36 max-w-md md:max-w-md lg:max-w-xl">
+          <div className="mt-20 md:mt-0 bg-white rounded-t-3xl p-9 pt-20 shadow-lg w-full h-full md:pb-28 max-w-md md:max-w-md lg:max-w-xl">
             <p className="text-blac text-sm font-light mb-2">
               LET'S GET YOU STARTED
             </p>
@@ -270,9 +271,17 @@ export default function SignUpPage() {
                 <Button
                   type="submit"
                   className="mt-4 max-w-md font-semibold py-6 px-8 bg-black text-white cursor-pointer"
+                  disabled={isSubmitting}
                 >
-                  SIGN UP ➜
+                  {isSubmitting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    "SIGN UP ➜"
+                  )}
                 </Button>
+
+                {/* Add the CAPTCHA element */}
+                <div id="clerk-captcha"></div>
               </form>
             </Form>
 
