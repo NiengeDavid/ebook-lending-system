@@ -58,7 +58,7 @@ export default function LoginPage() {
   useEffect(() => {
     if (isUserLoaded && isSignInLoaded) {
       if (isSignedIn) {
-        router.push("/dashboard");
+        router.push("/home");
       }
       setIsCheckingAuth(false);
     }

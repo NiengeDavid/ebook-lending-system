@@ -22,14 +22,14 @@ export default function HomePage() {
             </p>
             <div className="flex flex-row gap-4 justify-center md:justify-start">
               <Link href="/login">
-                <Button className="w-full bg-bg1 border border-bg1 py-6 px-8 text-lg font-medium hover:bg-transparent hover:text-black sm:w-auto cursor-pointer">
+                <Button className="w-full bg-bg1 border border-bg1 py-3 md:py-6 px-8 text-lg font-medium hover:bg-transparent hover:text-black sm:w-auto cursor-pointer">
                   Login
                 </Button>
               </Link>
               <Link href="/signup">
                 <Button
                   variant="outline"
-                  className="w-full bg-transparent border border-bg1 py-6 px-8 text-lg font-medium hover:bg-bg1 hover:text-white sm:w-auto cursor-pointer"
+                  className="w-full bg-transparent border border-bg1 py-3 md:py-6 px-8 text-lg font-medium hover:bg-bg1 hover:text-white sm:w-auto cursor-pointer"
                 >
                   Sign Up
                 </Button>

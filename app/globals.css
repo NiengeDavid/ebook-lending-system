@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import 'keen-slider/keen-slider.min.css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -9,6 +10,8 @@
   --color-primary-text: #0c1421;
   --color-secondary-text: #313957;
   --color-bg1: #162d3a;
+  --color-bg2: #DCDADA;
+  --color-bg3: #5A3636;
   --color-offset1: #424242;
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -133,11 +136,17 @@
     background-position: center; /* Centers the image */
     background-repeat: no-repeat; /* Prevents the image from repeating */
   }
+  .bg-home-image {
+    background-image: url("/assets/homebg.png"); /* Replace with your image path */
+    background-size: cover; /* Ensures the image covers the entire background */
+    background-position: center; /* Centers the image */
+    background-repeat: no-repeat; /* Prevents the image from repeating */
+  }
   .bg-gradient-overlay {
     background: linear-gradient(
       to bottom,
-      #212121d6,
-      #4242423d
+      #0f0f0fd6,
+      #1414143d
     ); /* Adjust gradient colors and opacity */
     position: absolute;
     inset: 0; /* Covers the entire container */

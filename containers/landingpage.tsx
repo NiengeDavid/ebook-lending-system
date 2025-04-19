@@ -1,16 +1,15 @@
-import { useUser, UserButton } from "@clerk/nextjs";
+import BookCTA from "@/components/bookcta";
+import BookCarousel from "@/components/books";
+import { HomeFAQS } from "@/components/homefaqs";
+import HomeHero from "@/components/homeHero";
 
 export default function LandingPage() {
-  const { isLoaded, isSignedIn, user } = useUser();
-
   return (
     <div className="">
-      <h1 className="text-base font-bold">
-        {isLoaded && isSignedIn
-          ? `Welcome ${user?.primaryEmailAddress || user?.emailAddresses[0]?.emailAddress}`
-          : "Welcome!"}
-      </h1>
-      <p>This is the landing page of your application.</p>
+      <HomeHero />
+      <BookCarousel />
+      <BookCTA />
+      <HomeFAQS />
     </div>
   );
 }

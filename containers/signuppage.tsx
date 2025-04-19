@@ -23,19 +23,25 @@ import { useState } from "react";
 import { useSignUp } from "@clerk/nextjs"; // Clerk signup hook
 import { useRouter } from "next/navigation"; // For redirecting
 import { toast } from "sonner";
+import zxcvbn from "zxcvbn";
 
 import { signupDetails } from "@/data/signup";
 import { siteDetails } from "@/data/siteDetails";
 
-// Define Zod schema for form validation
+// Update your schema to include password strength check
 const signUpSchema = z
   .object({
+    name: z.string().min(1, "Full name is required"),
     matriculationNumber: z.string().min(1, "Matriculation number is required"),
     email: z.string().email("Invalid email address"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    confirmPassword: z
+    password: z
       .string()
-      .min(8, "Confirm Password must be at least 8 characters"),
+      .min(8, "Password must be at least 8 characters")
+      .refine((val) => {
+        const result = zxcvbn(val);
+        return result.score >= 2; // Require at least "somewhat guessable"
+      }, "Password is too weak. Please use a stronger password."),
+    confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ["confirmPassword"],
@@ -55,6 +61,7 @@ export default function SignUpPage() {
   const form = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
+      name: "",
       matriculationNumber: "",
       email: "",
       password: "",
@@ -64,39 +71,65 @@ export default function SignUpPage() {
 
   const onSubmit = async (data: z.infer<typeof signUpSchema>) => {
     console.log("Form Data:", data);
-    // Handle form submission logic here
     setIsSubmitting(true);
 
     if (!isLoaded) return;
 
     try {
-      // Create user with Clerk
       const result = await signUp.create({
         emailAddress: data.email,
         password: data.password,
-
+        firstName: data.name.split(" ")[0], // Extract first name
+        lastName: data.name.split(" ")[1] || "", // Extract last name
         unsafeMetadata: {
-          // Additional user metadata
+          fullName: data.name,
+          email: data.email,
           registrationNumber: data.matriculationNumber,
         },
       });
 
-      // Prepare email verification
       await signUp.prepareEmailAddressVerification({
         strategy: "email_code",
       });
 
-      // Redirect to email verification page
       router.push("/verify-email");
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error during signup:", err);
-      toast("Uh oh! Something went wrong.", {
-        description: "There was a problem with your request. Try again",
-        closeButton: true,
-      });
+
+      // Handle password breach error specifically
+      if (
+        err.errors &&
+        err.errors.some((e: any) => e.code === "form_password_pwned")
+      ) {
+        toast.error("Password Compromised", {
+          description:
+            "This password has appeared in a data breach. Please choose a different, stronger password.",
+          action: {
+            label: "Understand",
+            onClick: () => {},
+          },
+        });
+        form.setError("password", {
+          type: "manual",
+          message: "This password has been compromised in a data breach",
+        });
+        form.setError("confirmPassword", {
+          type: "manual",
+          message: "Please choose a different password",
+        });
+      } else {
+        // Handle other errors
+        toast.error("Signup Failed", {
+          description:
+            err.message || "An unexpected error occurred during signup",
+          action: {
+            label: "Try Again",
+            onClick: () => {},
+          },
+        });
+      }
     } finally {
-      setIsSubmitting(false); // Stop loading
-      console.log("Form Data:", data);
+      setIsSubmitting(false);
     }
   };
 
@@ -144,7 +177,7 @@ export default function SignUpPage() {
           </div>
 
           {/* form */}
-          <div className="mt-20 md:mt-0 bg-white rounded-t-3xl p-9 pt-20 shadow-lg w-full h-full md:pb-28 max-w-md md:max-w-md lg:max-w-xl">
+          <div className="mt-20 md:mt-0 bg-white rounded-t-3xl p-9 pt-20 shadow-lg w-full h-full md:pb-8 max-w-md md:max-w-md lg:max-w-xl">
             <p className="text-blac text-sm font-light mb-2">
               LET'S GET YOU STARTED
             </p>
@@ -157,6 +190,25 @@ export default function SignUpPage() {
                 onSubmit={form.handleSubmit(onSubmit)}
                 className="space-y-6"
               >
+                {/* Name */}
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="text-sm">Full Name</FormLabel>
+                      <FormControl>
+                        <Input
+                          className="border border-offset1 py-6 px-2"
+                          placeholder="Enter your full name"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 {/* Matriculation Number */}
                 <FormField
                   control={form.control}
@@ -201,33 +253,59 @@ export default function SignUpPage() {
                 <FormField
                   control={form.control}
                   name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm">Password</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input
-                            className="border border-offset1 py-6 px-2"
-                            type={showPassword ? "text" : "password"}
-                            placeholder="Enter your password"
-                            {...field}
-                          />
-                          <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute right-2 top-2 py-2 text-sm text-gray-500 cursor-pointer"
-                          >
-                            {showPassword ? (
-                              <EyeOff size={18} />
-                            ) : (
-                              <Eye size={18} />
-                            )}
-                          </button>
-                        </div>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  render={({ field }) => {
+                    const strength = field.value
+                      ? zxcvbn(field.value).score
+                      : -1;
+                    return (
+                      <FormItem>
+                        <FormLabel className="text-sm">Password</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input
+                              className="border border-offset1 py-6 px-2"
+                              type={showPassword ? "text" : "password"}
+                              placeholder="Enter your password"
+                              {...field}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => setShowPassword(!showPassword)}
+                              className="absolute right-2 top-2 py-2 text-sm text-gray-500 cursor-pointer"
+                            >
+                              {showPassword ? (
+                                <EyeOff size={18} />
+                              ) : (
+                                <Eye size={18} />
+                              )}
+                            </button>
+                          </div>
+                        </FormControl>
+                        {field.value && (
+                          <div className="h-1.5 w-64 bg-gray-200 rounded-full mt-1 mb-5">
+                            <div
+                              className={`h-full mb-1 rounded-full ${
+                                strength <= 1
+                                  ? "bg-red-500"
+                                  : strength <= 2
+                                    ? "bg-yellow-500"
+                                    : strength <= 3
+                                      ? "bg-blue-500"
+                                      : "bg-green-500"
+                              }`}
+                              style={{
+                                width: `${((strength + 1) / 4) * 100}%`,
+                              }}
+                            />
+                            <span className="text-sm font-extralight text-primary-text">
+                              Password Strength
+                            </span>
+                          </div>
+                        )}
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
 
                 {/* Confirm Password */}
@@ -286,7 +364,7 @@ export default function SignUpPage() {
             </Form>
 
             {/* Back to Login */}
-            <div className="text-center mt-6">
+            <div className="text-center mt-4">
               <Link href="/login">
                 <Button className="w-full mt-10 py-6 font-semibold text-white bg-primary-red hover:bg-primary-red/80">
                   BACK TO LOGIN
