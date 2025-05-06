@@ -91,7 +91,7 @@ export default function LoginPage() {
         if (result.status === "complete") {
           // Set the user as active and redirect to the dashboard
           await setActive({ session: result.createdSessionId });
-          router.push("/dashboard");
+          router.push("/home");
         }
       } else {
         setError("Sign-in service is unavailable.");
