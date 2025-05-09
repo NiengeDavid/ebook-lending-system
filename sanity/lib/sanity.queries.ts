@@ -23,6 +23,9 @@ export const categoriesQuery = groq`*[_type == "category"] {
 export const booksQuery = groq`*[_type == "book"] {
     _id,
     _createdAt,
+    "slug": slug.current,
+    description,
+    details,
     title,
     author,
     rating,
@@ -44,7 +47,9 @@ export const booksQuery = groq`*[_type == "book"] {
 export const booksByCategoryQuery = groq`*[_type == "category" && slug.current == $slug] {
     _id,
     title,
+   "slug": slug.current,
     description,
+    details,
     "books": *[_type == "book" && references(^._id)] {
       _id,
       title,
@@ -59,6 +64,9 @@ export const bookDetailQuery = groq`*[_type == "book" && _id == $id] {
     _id,
     title,
     author,
+    "slug": slug.current,
+    description,
+    details,
     rating,
     reviews,
     "cover": {
@@ -92,6 +100,9 @@ export const searchBooksQuery = (params: {
     _id,
     _createdAt,
     title,
+    "slug": slug.current,
+    description,
+    details,
     author,
     rating,
     reviews,
@@ -109,6 +120,29 @@ export const searchBooksQuery = (params: {
     }
   } | order(_createdAt desc)
 `;
+
+export const bookBySlugQuery = groq`*[_type == "book" && slug.current == $slug][0] {
+  _id,
+  title,
+  author,
+  description,
+  rating,
+  reviews,
+  details,
+  "slug": slug.current,
+  "coverUrl": cover.asset->url,
+  "coverAlt": cover.alt,
+  "category": category->{
+    _id,
+    title,
+    "slug": slug.current
+  },
+  "bookFile": {
+    "url": bookFile.asset->url,
+    "originalFilename": bookFile.asset->originalFilename,
+    "size": bookFile.asset->size
+  }
+}`;
 
 //TYPES
 // export interface Book {
@@ -196,6 +230,9 @@ export interface BookImage {
 export interface Book {
   _id: string;
   _type: "book";
+  slug: string;
+  description?: string;
+  details?: string;
   _createdAt: string;
   _updatedAt: string;
   _rev: string;
@@ -235,11 +272,13 @@ export interface Book {
 export interface BooksByCategoryResult {
   _id: string;
   title: string;
-  description?: string;
   books: Array<{
     _id: string;
     title: string;
     author: string;
+    slug: string;
+    details?: string;
+    description?: string;
     rating: number;
     coverUrl?: string;
     bookFileUrl?: string;
@@ -278,9 +317,12 @@ export interface BookFile {
 
 export interface BookSearchResult {
   _id: string;
+  slug: string;
   _createdAt: string;
   title: string;
   author: string;
+  description?: string;
+  details?: string;
   rating: number;
   reviews: number;
   coverUrl?: string;

@@ -11,22 +11,24 @@ import {
 } from "@/components/ui/select";
 import { useState } from "react";
 
-const categories = [
-  "All Categories",
-  "Science",
-  "Technology",
-  "Arts",
-  "Research",
-];
+// const categories = [
+//   "All Categories",
+//   "Science",
+//   "Technology",
+//   "Arts",
+//   "Research",
+// ];
 
-export default function SearchBar({ 
+export default function SearchBar({
   onSearch,
   initialCategory = "All Categories",
-  initialQuery = ""
+  initialQuery = "",
+  categories = [],
 }: {
   onSearch: (category: string, query: string) => void;
   initialCategory?: string;
   initialQuery?: string;
+  categories: string[];
 }) {
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [searchTerm, setSearchTerm] = useState(initialQuery);
@@ -34,10 +36,10 @@ export default function SearchBar({
   const handleSearch = () => {
     onSearch(selectedCategory, searchTerm);
   };
-
+  //console.log("Selected Category:", categories);
   // Search when Enter is pressed
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleSearch();
     }
   };
@@ -47,12 +49,13 @@ export default function SearchBar({
       <div className="relative">
         <Select
           onValueChange={setSelectedCategory}
-          value={selectedCategory}
+          defaultValue={initialCategory}
         >
           <SelectTrigger className="bg-bg2 text-black text-sm px-4 py-6 border-none rounded-none cursor-pointer hover:bg-bg2/80">
             <SelectValue placeholder="All Categories" />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="All Categories">All Categories</SelectItem>
             {categories.map((category) => (
               <SelectItem key={category} value={category}>
                 {category}

@@ -2,15 +2,19 @@ import Container from "@/components/container";
 import SearchBar from "@/components/searchbar";
 import { homeDetails } from "@/data/homeDetails";
 
-export default function HomeHero({
-  onSearch,
-  initialCategory,
-  initialQuery,
-}: {
-  onSearch: (category: string, query: string) => void;
+interface HomeHeroProps {
+  onSearch?: (category: string, query: string) => void;
   initialCategory?: string;
   initialQuery?: string;
-}) {
+  categories?: string[];
+}
+
+export default function HomeHero({
+  onSearch = () => {}, // Default empty function
+  initialCategory = "All Categories",
+  initialQuery = "",
+  categories = [],
+}: HomeHeroProps) {
   return (
     <div className="relative bg-home-image h-full md:h-[45rem]">
       <div className="bg-gradient-overlay"></div>
@@ -29,6 +33,7 @@ export default function HomeHero({
               onSearch={onSearch}
               initialCategory={initialCategory}
               initialQuery={initialQuery}
+              categories={categories}
             />
           </div>
         </div>

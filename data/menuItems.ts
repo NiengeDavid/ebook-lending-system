@@ -10,8 +10,8 @@ export const menuItems: IMenuItem[] = [
     url: "/about",
   },
   {
-    text: "FAQS",
-    url: "/faqs",
+    text: "Search",
+    url: "/search",
   },
   {
       text: "Contact Us",

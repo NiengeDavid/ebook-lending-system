@@ -14,14 +14,18 @@ import {
   getAllBooks,
   getAllCategories,
 } from "@/sanity/lib/sanity.client";
-import { type Book, type Category } from "@/sanity/lib/sanity.queries";
+import {
+  BookSearchResult,
+  type Book,
+  type Category,
+} from "@/sanity/lib/sanity.queries";
 
 function CategorySlider({
   category,
   books,
 }: {
   category: Category;
-  books: Book[];
+  books: BookSearchResult[];
 }) {
   const [sliderRef, sliderInstance] = useKeenSlider<HTMLDivElement>({
     slides: { perView: 4, spacing: 4 },
@@ -96,7 +100,7 @@ function CategorySlider({
 export default function BookCarousel() {
   const client = getClient({ token: readToken });
   const [categories, setCategories] = useState<Category[]>([]);
-  const [books, setBooks] = useState<Book[]>([]);
+  const [books, setBooks] = useState<BookSearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {

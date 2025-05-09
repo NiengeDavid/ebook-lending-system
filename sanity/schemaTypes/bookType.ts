@@ -15,10 +15,38 @@ export const bookType = defineType({
       validation: (Rule) => Rule.required(),
     }),
     defineField({
+      name: "slug",
+      title: "Slug",
+      type: "slug",
+      options: {
+        source: "title",
+        maxLength: 96,
+        slugify: (input) =>
+          input.toLowerCase().replace(/\s+/g, "-").slice(0, 96),
+      },
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
       name: "author",
       title: "Author",
       type: "string",
       validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: "description",
+      title: "Description",
+      type: "text",
+      rows: 5, // Makes it a larger text box
+      validation: (Rule) =>
+        Rule.max(2000).warning("Description should be less than 2000 characters"),
+    }),
+    defineField({
+      name: "details",
+      title: "Book Details",
+      type: "text",
+      rows: 5, // Makes it a larger text box
+      validation: (Rule) =>
+        Rule.max(5000).warning("Description should be less than 5000 characters"),
     }),
     defineField({
       name: "cover",
@@ -27,6 +55,14 @@ export const bookType = defineType({
       options: {
         hotspot: true,
       },
+      fields: [
+        defineField({
+          name: "alt",
+          title: "Alternative Text",
+          type: "string",
+          description: "Important for SEO and accessibility",
+        }),
+      ],
       validation: (Rule) => Rule.required(),
     }),
     defineField({
@@ -54,6 +90,7 @@ export const bookType = defineType({
       type: "file",
       options: {
         accept: ".pdf",
+        storeOriginalFilename: true,
       },
       validation: (Rule) => Rule.required(),
     }),

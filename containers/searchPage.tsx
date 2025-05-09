@@ -1,27 +1,83 @@
 "use client";
 
-import { useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useState, useEffect } from "react";
 import HomeHero from "@/components/homeHero";
 import SearchResults from "@/components/searchResult";
 import Container from "@/components/container";
 import { readToken } from "@/sanity/lib/sanity.api";
 import { getClient } from "@/sanity/lib/sanity.client";
-import { getAllSearchBooks } from "@/sanity/lib/sanity.client";
-import { BookSearchResult } from "@/sanity/lib/sanity.queries";
+import {
+  getAllBooks,
+  getAllSearchBooks,
+  getAllCategories,
+} from "@/sanity/lib/sanity.client";
+import {
+  type BookSearchResult,
+  type Category,
+} from "@/sanity/lib/sanity.queries";
 import { toast } from "sonner";
 
 export default function SearchPage() {
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get("query") || "";
+  const initialCategory = searchParams.get("category") || "All Categories";
   const client = getClient({ token: readToken });
   const [searchResults, setSearchResults] = useState<BookSearchResult[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [currentSearch, setCurrentSearch] = useState({
     query: "",
     category: "All Categories",
   });
+  const [hasSearched, setHasSearched] = useState(false);
+
+  // Load initial search if URL has parameters
+  useEffect(() => {
+    const loadInitialSearch = async () => {
+      if (initialQuery) {
+        await handleSearch(initialCategory, initialQuery);
+      } else {
+        // Load all books if no search query
+        const allBooks = await getAllBooks(client);
+        setSearchResults(allBooks);
+      }
+    };
+
+    loadInitialSearch();
+  }, []);
+
+  // Load all books on initial render
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        setIsSearching(true);
+        const [allBooks, categories] = await Promise.all([
+          getAllBooks(client),
+          getAllCategories(client),
+        ]);
+        setSearchResults(allBooks);
+        setAvailableCategories(categories.map((c) => c.title));
+        //console.log(availableCategories)
+      } catch (error) {
+        console.error("Failed to load initial data:", error);
+        toast.error("Failed to load initial data. Please refresh the page.");
+      } finally {
+        setIsSearching(false);
+      }
+    };
+
+    loadInitialData();
+  }, []);
 
   const handleSearch = async (category: string, query: string) => {
-    if (!query.trim()) {
-      setSearchResults([]);
+    setHasSearched(true);
+
+    if (!query.trim() && category === "All Categories") {
+      // If empty search and no category, show all books again
+      const allBooks = await getAllBooks(client);
+      setSearchResults(allBooks);
+      setCurrentSearch({ query: "", category: "All Categories" });
       return;
     }
 
@@ -34,11 +90,10 @@ export default function SearchPage() {
         category: category !== "All Categories" ? category : undefined,
       });
       setSearchResults(results);
-      console.log("Search results:", results);
     } catch (error) {
       console.error("Search failed:", error);
+      toast.error("Search failed. Please try again.");
       setSearchResults([]);
-      toast("Failed to search books. Please try again.");
     } finally {
       setIsSearching(false);
     }
@@ -50,6 +105,7 @@ export default function SearchPage() {
         onSearch={handleSearch}
         initialCategory={currentSearch.category}
         initialQuery={currentSearch.query}
+        categories={availableCategories}
       />
 
       <Container className="py-12">
@@ -60,7 +116,7 @@ export default function SearchPage() {
         ) : (
           <SearchResults
             books={searchResults}
-            searchQuery={currentSearch.query}
+            searchQuery={hasSearched ? currentSearch.query : ""}
             category={currentSearch.category}
           />
         )}

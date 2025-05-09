@@ -7,6 +7,7 @@ import {
 } from "@/sanity/lib/sanity.api";
 import {
   type Book,
+  bookBySlugQuery,
   BookSearchResult,
   booksQuery,
   categoriesQuery,
@@ -43,7 +44,9 @@ export async function getAllCategories(
   return (await client.fetch(categoriesQuery)) || [];
 }
 
-export async function getAllBooks(client: SanityClient): Promise<Book[]> {
+export async function getAllBooks(
+  client: SanityClient
+): Promise<BookSearchResult[]> {
   return (await client.fetch(booksQuery)) || [];
 }
 
@@ -67,6 +70,13 @@ export async function getAllSearchBooks(
     console.error("Search error:", error);
     return [];
   }
+}
+
+export async function getAllBookBySlug(
+  client: SanityClient,
+  slug: string
+): Promise<BookSearchResult | null> {
+  return await client.fetch(bookBySlugQuery, { slug });
 }
 
 //   export async function getSettings(client: SanityClient): Promise<Settings> {
