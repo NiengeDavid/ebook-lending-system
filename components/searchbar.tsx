@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useState } from "react";
 
 const categories = [
   "All Categories",
@@ -17,26 +17,37 @@ const categories = [
   "Technology",
   "Arts",
   "Research",
-]; // Add more as needed
+];
 
-export default function SearchBar() {
-  const [selectedCategory, setSelectedCategory] = useState("All Categories");
-  const [searchTerm, setSearchTerm] = useState("");
+export default function SearchBar({ 
+  onSearch,
+  initialCategory = "All Categories",
+  initialQuery = ""
+}: {
+  onSearch: (category: string, query: string) => void;
+  initialCategory?: string;
+  initialQuery?: string;
+}) {
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory);
+  const [searchTerm, setSearchTerm] = useState(initialQuery);
 
   const handleSearch = () => {
-    // You can route or call a search API here
-    console.log("Search:", { selectedCategory, searchTerm });
+    onSearch(selectedCategory, searchTerm);
+  };
+
+  // Search when Enter is pressed
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
   };
 
   return (
     <div className="flex w-full max-w-3xl items-center mx-auto overflow-hidden shadow-md">
-      {/* Category Dropdown */}
-
       <div className="relative">
-        {/* Category Dropdown */}
         <Select
-          onValueChange={(value) => setSelectedCategory(value)}
-          defaultValue="All Categories"
+          onValueChange={setSelectedCategory}
+          value={selectedCategory}
         >
           <SelectTrigger className="bg-bg2 text-black text-sm px-4 py-6 border-none rounded-none cursor-pointer hover:bg-bg2/80">
             <SelectValue placeholder="All Categories" />
@@ -51,16 +62,15 @@ export default function SearchBar() {
         </Select>
       </div>
 
-      {/* Search Input */}
       <input
         type="text"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
+        onKeyDown={handleKeyDown}
         placeholder="Search for book title, author, category"
         className="flex-1 px-4 py-3 outline-none w-10 bg-white md:w-full"
       />
 
-      {/* Search Button */}
       <Button
         onClick={handleSearch}
         className="bg-primary-red px-4 py-6 rounded-none flex items-center justify-center cursor-pointer"
