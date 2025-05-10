@@ -19,6 +19,7 @@ import {
   type Book,
   type Category,
 } from "@/sanity/lib/sanity.queries";
+import Link from "next/link";
 
 function CategorySlider({
   category,
@@ -59,37 +60,43 @@ function CategorySlider({
 
         <div ref={sliderRef} className="keen-slider">
           {categoryBooks.map((book) => (
-            <div key={book._id} className="keen-slider__slide">
-              {/* Your book card content */}
-              <div className="bg-bg2/10 rounded-xl overflow-hidden shadow-md w-[322px]">
-                <Image
-                  src={book.coverUrl || "/placeholder-image.jpg"}
-                  alt={book.title || "Book Cover"}
-                  width={322}
-                  height={450}
-                  className="w-92 h-[450px] object-cover"
-                />
-                <div className="p-3">
-                  <h3 className="font-semibold text-sm text-black">
-                    {book.title}
-                  </h3>
-                  <p className="text-xs text-gray-600">{book.author}</p>
-                  <div className="flex items-center text-yellow-500 text-xs mt-1">
-                    {[...Array(book.rating)].map((_, i) => (
-                      <Star
-                        key={i}
-                        size={14}
-                        fill="currentColor"
-                        strokeWidth={0}
-                      />
-                    ))}
-                    <span className="ml-1 text-gray-500">
-                      ({book.reviews} reviews)
-                    </span>
+            <Link
+              href={`/books/${book?.slug}`}
+              key={book._id}
+              className="group" // Added group for hover effects
+            >
+              <div className="keen-slider__slide">
+                {/* Your book card content */}
+                <div className="bg-bg2/10 rounded-xl overflow-hidden shadow-md w-[322px]">
+                  <Image
+                    src={book.coverUrl || "/placeholder-image.jpg"}
+                    alt={book.title || "Book Cover"}
+                    width={322}
+                    height={450}
+                    className="w-92 h-[450px] object-cover"
+                  />
+                  <div className="p-3">
+                    <h3 className="font-semibold text-sm text-black">
+                      {book.title}
+                    </h3>
+                    <p className="text-xs text-gray-600">{book.author}</p>
+                    <div className="flex items-center text-yellow-500 text-xs mt-1">
+                      {[...Array(book.rating)].map((_, i) => (
+                        <Star
+                          key={i}
+                          size={14}
+                          fill="currentColor"
+                          strokeWidth={0}
+                        />
+                      ))}
+                      <span className="ml-1 text-gray-500">
+                        ({book.reviews} reviews)
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

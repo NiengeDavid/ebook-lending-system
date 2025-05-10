@@ -8,7 +8,7 @@ export function BookDescription({ text }: { text?: string }) {
   return (
     <div className="space-y-4 text-base leading-relaxed mb-4">
       {paragraphs.map((paragraph, i) => (
-        <p key={i} className="text-gray-700">
+        <p key={i} className="text-[#212529]">
           {paragraph}
         </p>
       ))}

@@ -12,7 +12,7 @@ interface BookViewProps {
 export default function BookView({ book }: BookViewProps) {
   return (
     <div className="bg-white">
-      <Container className="flex flex-col items-center lg:flex-row lg:items-start gap-8 p-6 text-gray-800">
+      <Container className="flex flex-col items-center lg:flex-row lg:items-start gap-8 p-6 text-gray-800 pb-32 border-b-2">
         {/* Book Cover */}
         <div className="flex-shrink-0">
           <Image

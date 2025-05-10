@@ -2,13 +2,9 @@
 import { getClient } from "@/sanity/lib/sanity.client";
 import { getAllBookBySlug } from "@/sanity/lib/sanity.client";
 import { readToken } from "@/sanity/lib/sanity.api";
-import Image from "next/image";
-import { Star, Download } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import {
   Breadcrumb,
-  BreadcrumbEllipsis,
   BreadcrumbItem,
   BreadcrumbLink,
   BreadcrumbList,
@@ -17,6 +13,7 @@ import {
 } from "@/components/ui/breadcrumb";
 import Container from "@/components/container";
 import BookView from "@/components/viewBook";
+import BookDetails from "@/components/bookDetails";
 
 export default async function BookPage({
   params,
@@ -56,8 +53,11 @@ export default async function BookPage({
         </Breadcrumb>
       </Container>
 
-      {/* Book Details */}
+      {/* Book Description */}
       <BookView book={book} />
+
+      {/* Book Details */}
+      <BookDetails book={book} />
     </div>
   );
 }
