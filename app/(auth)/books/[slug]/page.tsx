@@ -1,4 +1,5 @@
-// app/books/[slug]/page.tsx
+import type { Metadata } from "next";
+import { bookDetails } from "@/data/bookDetails";
 import { getClient } from "@/sanity/lib/sanity.client";
 import { getAllBookBySlug } from "@/sanity/lib/sanity.client";
 import { readToken } from "@/sanity/lib/sanity.api";
@@ -14,6 +15,11 @@ import {
 import Container from "@/components/container";
 import BookView from "@/components/viewBook";
 import BookDetails from "@/components/bookDetails";
+
+export const metadata: Metadata = {
+  title: bookDetails?.pageMetadata.title,
+  description: bookDetails?.pageMetadata.description,
+};
 
 export default async function BookPage({
   params,

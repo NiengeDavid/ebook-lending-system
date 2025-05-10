@@ -3,7 +3,7 @@ import { title } from "process";
 
 export const homeDetails = {
   pageMetadata: {
-    title: "Home | MIU E-Library",
+    title: "Home",
     description: "Welcome to MIUN e-book Lending System.",
   },
   hero: {

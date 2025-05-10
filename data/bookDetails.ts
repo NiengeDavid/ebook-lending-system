@@ -1,6 +1,6 @@
-export const searchDetails = {
+export const bookDetails = {
   pageMetadata: {
-    title: "Search Page",
+    title: "View Book Page",
     description: "Welcome to MIUN e-book Lending System.",
   },
 };
