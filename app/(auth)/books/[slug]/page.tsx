@@ -21,16 +21,13 @@ export const metadata: Metadata = {
   description: bookDetails?.pageMetadata.description,
 };
 
-interface PageProps {
+export default async function BookPage({
+  params,
+}: {
   params: { slug: string };
-  searchParams?: { [key: string]: string | string[] | undefined };
-}
-
-export default async function BookPage({ params }: PageProps) {
+}) {
   const client = getClient({ token: readToken });
-  const slug = params.slug; // Destructure after the async context is established
-
-  const book = await getAllBookBySlug(client, slug);
+  const book = await getAllBookBySlug(client, params.slug);
 
   if (!book) {
     return <div className="h-screen p-4">Book not found</div>;
