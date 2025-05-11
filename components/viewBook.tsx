@@ -36,27 +36,21 @@ export default function BookView({ book }: BookViewProps) {
     setError("");
 
     try {
+      // Create the borrow record
       const borrowRecord = await createBorrowRecord(client, {
-        userId: user.id, // Passes auth user.id which matches userId field
-        bookId: book._id,
+        authUserId: user.id, // Your auth provider's user ID
+        bookId: book._id, // Sanity book _id
       });
 
-      if (!borrowRecord?._id) {
-        throw new Error("Failed to create borrow record");
+      // Get the PDF URL and redirect
+      const pdfUrl = await getBookPdfUrl(client, book?.slug);
+      if (!pdfUrl) {
+        throw new Error("Book PDF not available");
       }
 
-      const pdfUrl = await getBookPdfUrl(client, book?.slug);
-      if (pdfUrl) {
-        router.push(`/read/${book?.slug}?fullAccess=true`);
-      } else {
-        throw new Error("Failed to get book PDF");
-      }
+      router.push(`/read/${book?.slug}?fullAccess=true`);
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to borrow book. Please try again."
-      );
+      setError(err instanceof Error ? err.message : "Failed to borrow book");
       console.error("Borrow error:", err);
     } finally {
       setIsBorrowing(false);

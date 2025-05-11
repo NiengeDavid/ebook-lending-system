@@ -153,14 +153,28 @@ export const bookPdfUrlQuery = groq`
 export const createBorrowedBookMutation = groq`
   *[_type == "user" && userId == $userId] {
     _id,
-    "borrowedBooks": *[_type == "borrowedBooks" && user._ref == ^._id && book._ref == $bookId && returned == false]
+    "borrowedBook": *[_type == "borrowedBook" && user._ref == ^._id && book._ref == $bookId && returned == false]
   }[0]
+`;
+
+export const findUserByAuthIdQuery = groq`
+  *[_type == "user" && userId == $authId][0] {
+    _id
+  }
+`;
+
+export const checkExistingBorrowQuery = groq`
+  count(*[
+    _type == "borrowedBook" && 
+    user._ref == $userId && 
+    book._ref == $bookId &&
+    returned == false
+  ])
 `;
 
 export const bookPdfUrlBySlugQuery = groq`
   *[_type == "book" && slug.current == $slug][0] {
-    "url": bookFile.asset->url,
-    "originalFilename": bookFile.asset->originalFilename
+    "url": bookFile.asset->url
   }
 `;
 
@@ -356,7 +370,7 @@ export interface BookPdfUrlResult {
 }
 
 export interface BorrowedBookDocument {
-  _type: "borrowedBooks";
+  _type: "borrowedBook";
   user: {
     _type: "reference";
     _ref: string;
@@ -374,4 +388,48 @@ export interface BorrowedBookDocument {
 export interface BookPdfUrlResponse {
   url?: string;
   originalFilename?: string;
+}
+
+// types/borrowedBook.ts
+export interface SanityReference {
+  _type: "reference";
+  _ref: string;
+}
+
+export interface SanityUserReference {
+  _type: "reference";
+  _ref: string;
+  // You can expand this if you need to include user details
+}
+
+export interface SanityBookReference {
+  _type: "reference";
+  _ref: string;
+  // You can expand this if you need to include book details
+}
+
+export interface BorrowedBookDocument {
+  _id: string;
+  _type: "borrowedBook"; // Must match your schema name exactly
+  _createdAt?: string;
+  _updatedAt?: string;
+  _rev?: string;
+  user: SanityUserReference;
+  book: SanityBookReference;
+  borrowedDate: string; // ISO date string
+  dueDate: string; // ISO date string
+  returned: boolean;
+}
+
+// For the findUserByAuthIdQuery
+export interface SanityUserResponse {
+  _id: string;
+}
+
+// For the checkExistingBorrowQuery
+export type ExistingBorrowsCount = number;
+
+// For createBorrowRecord response
+export interface CreateBorrowResponse extends BorrowedBookDocument {
+  // You can add any additional fields from the mutation response
 }

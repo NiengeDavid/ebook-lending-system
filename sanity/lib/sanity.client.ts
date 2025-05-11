@@ -17,7 +17,10 @@ import {
   BorrowedBookDocument,
   categoriesQuery,
   type Category,
+  checkExistingBorrowQuery,
   createBorrowedBookMutation,
+  CreateBorrowResponse,
+  findUserByAuthIdQuery,
   SearchBooksParams,
   searchBooksQuery,
 } from "@/sanity/lib/sanity.queries";
@@ -98,43 +101,56 @@ export async function getBookPdfUrl(
 export async function createBorrowRecord(
   client: SanityClient,
   params: {
-    userId: string; // This is the auth provider's user ID (matches userId field)
-    bookId: string;
+    authUserId: string; // From your auth provider (user.id)
+    bookId: string; // Sanity book _id
   }
-): Promise<BorrowedBookDocument> {
+): Promise<CreateBorrowResponse> {
   const now = new Date();
   const dueDate = new Date();
   dueDate.setDate(now.getDate() + 14);
 
-  // 1. Find the Sanity user document and check for existing borrows
-  const existing = await client.fetch(createBorrowedBookMutation, {
-    userId: params.userId, // Now checking against userId field
-    bookId: params.bookId,
+  // 1. Find the Sanity user document that matches the auth user ID
+  const sanityUser = await client.fetch(findUserByAuthIdQuery, {
+    authId: params.authUserId,
   });
 
-  if (!existing?._id) {
+  if (!sanityUser?._id) {
     throw new Error("User account not found in our system");
   }
 
-  if (existing?.borrowedBooks?.length > 0) {
+  // 2. Check for existing borrow
+  const existingBorrows = await client.fetch(checkExistingBorrowQuery, {
+    userId: sanityUser._id,
+    bookId: params.bookId,
+  });
+
+  if (existingBorrows > 0) {
     throw new Error("You already have this book borrowed");
   }
 
-  // 2. Create the new borrow record
-  return client.create({
-    _type: "borrowedBooks",
-    user: {
-      _type: "reference",
-      _ref: existing._id, // Using the Sanity user _id we just found
-    },
-    book: {
-      _type: "reference",
-      _ref: params.bookId,
-    },
-    borrowedDate: now.toISOString(),
-    dueDate: dueDate.toISOString(),
-    returned: false,
-  });
+  // 3. Create the borrow record
+  try {
+    const result = await client.create({
+      _type: "borrowedBook", // Must match your schema name exactly
+      user: {
+        _type: "reference",
+        _ref: sanityUser._id,
+      },
+      book: {
+        _type: "reference",
+        _ref: params.bookId,
+      },
+      borrowedDate: now.toISOString(),
+      dueDate: dueDate.toISOString(),
+      returned: false,
+    });
+
+    console.log("Borrow record created:", result._id); // For debugging
+    return result as CreateBorrowResponse;
+  } catch (error) {
+    console.error("Create borrow error:", error);
+    throw new Error("Failed to create borrow record");
+  }
 }
 
 export async function getBookPdfBySlug(
