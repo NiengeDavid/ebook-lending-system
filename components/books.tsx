@@ -120,8 +120,8 @@ export default function BookCarousel() {
         ]);
         setCategories(categoriesData);
         setBooks(booksData);
-        console.log("Categories:", categoriesData);
-        console.log("Books:", booksData);
+        //console.log("Categories:", categoriesData);
+       //console.log("Books:", booksData);
       } catch (error) {
         toast("Oops!", {
           description:

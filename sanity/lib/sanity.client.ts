@@ -8,10 +8,16 @@ import {
 import {
   type Book,
   bookBySlugQuery,
+  bookPdfUrlBySlugQuery,
+  bookPdfUrlQuery,
+  BookPdfUrlResponse,
+  BookPdfUrlResult,
   BookSearchResult,
   booksQuery,
+  BorrowedBookDocument,
   categoriesQuery,
   type Category,
+  createBorrowedBookMutation,
   SearchBooksParams,
   searchBooksQuery,
 } from "@/sanity/lib/sanity.queries";
@@ -77,6 +83,68 @@ export async function getAllBookBySlug(
   slug: string
 ): Promise<BookSearchResult | null> {
   return await client.fetch(bookBySlugQuery, { slug });
+}
+
+export async function getBookPdfUrl(
+  client: SanityClient,
+  slug: string
+): Promise<string | null> {
+  const result = await client.fetch<BookPdfUrlResult>(bookPdfUrlQuery, {
+    slug,
+  });
+  return result?.url || null;
+}
+
+export async function createBorrowRecord(
+  client: SanityClient,
+  params: {
+    userId: string; // This is the auth provider's user ID (matches userId field)
+    bookId: string;
+  }
+): Promise<BorrowedBookDocument> {
+  const now = new Date();
+  const dueDate = new Date();
+  dueDate.setDate(now.getDate() + 14);
+
+  // 1. Find the Sanity user document and check for existing borrows
+  const existing = await client.fetch(createBorrowedBookMutation, {
+    userId: params.userId, // Now checking against userId field
+    bookId: params.bookId,
+  });
+
+  if (!existing?._id) {
+    throw new Error("User account not found in our system");
+  }
+
+  if (existing?.borrowedBooks?.length > 0) {
+    throw new Error("You already have this book borrowed");
+  }
+
+  // 2. Create the new borrow record
+  return client.create({
+    _type: "borrowedBooks",
+    user: {
+      _type: "reference",
+      _ref: existing._id, // Using the Sanity user _id we just found
+    },
+    book: {
+      _type: "reference",
+      _ref: params.bookId,
+    },
+    borrowedDate: now.toISOString(),
+    dueDate: dueDate.toISOString(),
+    returned: false,
+  });
+}
+
+export async function getBookPdfBySlug(
+  client: SanityClient,
+  slug: string
+): Promise<BookPdfUrlResponse> {
+  return (
+    (await client.fetch<BookPdfUrlResponse>(bookPdfUrlBySlugQuery, { slug })) ||
+    {}
+  );
 }
 
 //   export async function getSettings(client: SanityClient): Promise<Settings> {

@@ -144,6 +144,26 @@ export const bookBySlugQuery = groq`*[_type == "book" && slug.current == $slug][
   }
 }`;
 
+export const bookPdfUrlQuery = groq`
+  *[_type == "book" && slug.current == $slug][0] {
+    "url": bookFile.asset->url
+  }
+`;
+
+export const createBorrowedBookMutation = groq`
+  *[_type == "user" && userId == $userId] {
+    _id,
+    "borrowedBooks": *[_type == "borrowedBooks" && user._ref == ^._id && book._ref == $bookId && returned == false]
+  }[0]
+`;
+
+export const bookPdfUrlBySlugQuery = groq`
+  *[_type == "book" && slug.current == $slug][0] {
+    "url": bookFile.asset->url,
+    "originalFilename": bookFile.asset->originalFilename
+  }
+`;
+
 //TYPES
 // export interface Book {
 //   _id: string;
@@ -329,4 +349,29 @@ export interface BookSearchResult {
   coverAlt?: string;
   category?: BookCategory;
   bookFile: BookFile;
+}
+
+export interface BookPdfUrlResult {
+  url?: string;
+}
+
+export interface BorrowedBookDocument {
+  _type: "borrowedBooks";
+  user: {
+    _type: "reference";
+    _ref: string;
+  };
+  book: {
+    _type: "reference";
+    _ref: string;
+  };
+  borrowedDate: string;
+  dueDate: string;
+  returned: boolean;
+  _id: string;
+}
+
+export interface BookPdfUrlResponse {
+  url?: string;
+  originalFilename?: string;
 }

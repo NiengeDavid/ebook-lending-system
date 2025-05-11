@@ -19,6 +19,8 @@ export const readToken = process.env.SANITY_API_READ_TOKEN || "";
 
 export const writeToken = process.env.SANITY_API_WRITE_TOKEN || "";
 
+export const developerToken = process.env.SANITY_API_DEV_TOKEN || "";
+
 // Validate the API version
 function validateApiVersion(version: string): string {
   const isValid = /^(\d{4}-\d{2}-\d{2}|1)$/.test(version);
