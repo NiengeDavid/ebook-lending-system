@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useEffect, use } from "react";
 import type { Metadata } from "next";
 import { bookDetails } from "@/data/bookDetails";
 import { getClient } from "@/sanity/lib/sanity.client";
@@ -15,21 +18,50 @@ import {
 import Container from "@/components/container";
 import BookView from "@/components/viewBook";
 import BookDetails from "@/components/bookDetails";
+import { BookSearchResult } from "@/sanity/lib/sanity.queries";
+import { toast } from "sonner";
 
-export const metadata: Metadata = {
-  title: bookDetails?.pageMetadata.title,
-  description: bookDetails?.pageMetadata.description,
-};
+// export const metadata: Metadata = {
+//   title: bookDetails?.pageMetadata.title,
+//   description: bookDetails?.pageMetadata.description,
+// };
 
-export default async function BookPage({
+export default function BookPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
+  const [booksData, setBooksData] = useState<BookSearchResult | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const client = getClient({ token: readToken });
-  const book = await getAllBookBySlug(client, params.slug);
+  const { slug } = use(params);
 
-  if (!book) {
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        const bookData = await getAllBookBySlug(client, slug);
+        setBooksData(bookData);
+        //console.log("Books:", bookData);
+      } catch (error) {
+        toast.error("Oops!", {
+          description:
+            "An error occurred while fetching data. Please try again later.",
+        });
+        console.error("Error fetching data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (slug) {
+      fetchData();
+    }
+  }, []);
+
+  // const book = await getAllBookBySlug(client, params.slug);
+
+  if (!booksData) {
     return <div className="h-screen p-4">Book not found</div>;
   }
 
@@ -52,17 +84,17 @@ export default async function BookPage({
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>{book.title}</BreadcrumbPage>
+              <BreadcrumbPage>{booksData?.title}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
       </Container>
 
       {/* Book Description */}
-      <BookView book={book} />
+      <BookView book={booksData} />
 
       {/* Book Details */}
-      <BookDetails book={book} />
+      <BookDetails book={booksData} />
     </div>
   );
 }

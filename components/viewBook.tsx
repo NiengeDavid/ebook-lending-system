@@ -31,7 +31,7 @@ export default function BookView({ book }: BookViewProps) {
       router.push("/sign-in");
       return;
     }
-
+    console.log(developerToken);
     setIsBorrowing(true);
     setError("");
 
@@ -126,6 +126,8 @@ export default function BookView({ book }: BookViewProps) {
           >
             Preview Book
           </Button>
+
+          {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
 
           <h4 className="text-base font-semibold border-t pt-3">
             Return Policy
