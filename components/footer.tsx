@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import Container from "./container";
+import { menuItems } from "@/data/menuItems";
 
 export default function Footer() {
   return (
@@ -30,10 +31,14 @@ export default function Footer() {
 
             <div className="space-y-4 mt-4 text-sm">
               <p className="flex items-center gap-2">
-                <Phone size={16} /> <a href="tel:+234 9103715381">+234 9103715381</a>
+                <Phone size={16} />{" "}
+                <a href="tel:+234 9103715381">+234 9103715381</a>
               </p>
               <p className="flex items-center gap-2">
-                <Mail size={16} /><a href="mailto:support@miusecurelibrary.com">support@miusecurelibrary.com</a>
+                <Mail size={16} />
+                <a href="mailto:support@miusecurelibrary.com">
+                  support@miusecurelibrary.com
+                </a>
               </p>
               <p className="flex items-center gap-2">
                 <MapPin size={16} /> Km 21 Abuja-Keffi Expressway
@@ -46,24 +51,13 @@ export default function Footer() {
             <div>
               <h4 className="font-semibold mb-2">Quick Links</h4>
               <ul className="space-y-4 text-gray-100">
-                <li>
-                  <Link className="hover:text-primary-red" href="/">Home</Link>
-                </li>
-                <li>
-                  <Link className="hover:text-primary-red" href="/about">About</Link>
-                </li>
-                <li>
-                  <Link className="hover:text-primary-red" href="/features">Features</Link>
-                </li>
-                <li>
-                  <Link className="hover:text-primary-red" href="/how-it-works">How It Works</Link>
-                </li>
-                <li>
-                  <Link className="hover:text-primary-red" href="/faq">Frequently Asked Questions</Link>
-                </li>
-                <li>
-                  <Link className="hover:text-primary-red" href="/contact">Contact Us</Link>
-                </li>
+                {menuItems.map((item, index) => (
+                  <li key={index}>
+                    <Link className="hover:text-primary-red" href={item.url}>
+                      {item.text}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
 
@@ -71,10 +65,14 @@ export default function Footer() {
               <h4 className="font-semibold mb-2">User Resources</h4>
               <ul className="space-y-4 text-gray-100">
                 <li>
-                  <Link className="hover:text-primary-red" href="/dashboard">User Dashboard</Link>
+                  <Link className="hover:text-primary-red" href="/dashboard">
+                    User Dashboard
+                  </Link>
                 </li>
                 <li>
-                  <Link className="hover:text-primary-red" href="/admin">Admin Panel</Link>
+                  <Link className="hover:text-primary-red" href="/admin">
+                    Admin Panel
+                  </Link>
                 </li>
               </ul>
             </div>
@@ -113,7 +111,8 @@ export default function Footer() {
 
         <hr className="my-10 border-gray-700" />
         <p className="text-center text-sm text-gray-400">
-          © <span>{new Date().getFullYear()}</span> MIU’s E-Library System. All Rights Reserved.
+          © <span>{new Date().getFullYear()}</span> MIU’s E-Library System. All
+          Rights Reserved.
         </p>
       </Container>
     </footer>
