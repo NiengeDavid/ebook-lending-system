@@ -35,11 +35,11 @@ export function getClient(preview?: { token: string }): SanityClient {
   });
 
   // If preview is provided and has a token, return a client with the token
-  // if (preview?.token) {
-  //   return client.withConfig({
-  //     token: preview.token,
-  //   });
-  // }
+  if (preview?.token) {
+    return client.withConfig({
+      token: preview.token,
+    });
+  }
 
   // Otherwise, return the default client
   return client;

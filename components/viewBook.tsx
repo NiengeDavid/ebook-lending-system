@@ -31,7 +31,7 @@ export default function BookView({ book }: BookViewProps) {
       router.push("/sign-in");
       return;
     }
-    console.log(developerToken);
+    //console.log(developerToken);
     setIsBorrowing(true);
     setError("");
 
