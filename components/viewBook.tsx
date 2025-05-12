@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs"; // or your auth provider
-import { developerToken } from "@/sanity/lib/sanity.api";
+import { writeToken } from "@/sanity/lib/sanity.api";
 import {
   getBookPdfUrl,
   createBorrowRecord,
@@ -24,7 +24,7 @@ export default function BookView({ book }: BookViewProps) {
   const { user } = useUser();
   const [isBorrowing, setIsBorrowing] = useState(false);
   const [error, setError] = useState("");
-  const client = getClient({ token: developerToken });
+  const client = getClient({ token: writeToken });
 
   const handleBorrow = async () => {
     if (!user) {
