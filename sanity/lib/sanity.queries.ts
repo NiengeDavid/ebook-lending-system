@@ -178,6 +178,21 @@ export const bookPdfUrlBySlugQuery = groq`
   }
 `;
 
+export const getOverdueBooksQuery = groq`
+  *[_type == "borrowedBook" && 
+     user._ref == $userRef && 
+    returned == false &&
+    dueDate < now()] {
+    _id,
+    book-> {
+      title,
+      slug
+    },
+    borrowedDate,
+    dueDate
+  }
+`;
+
 //TYPES
 // export interface Book {
 //   _id: string;
@@ -432,4 +447,16 @@ export type ExistingBorrowsCount = number;
 // For createBorrowRecord response
 export interface CreateBorrowResponse extends BorrowedBookDocument {
   // You can add any additional fields from the mutation response
+}
+
+export interface OverdueBook {
+  _id: string;
+  book: {
+    title: string;
+    slug: {
+      current: string;
+    };
+  };
+  borrowedDate: string;
+  dueDate: string;
 }

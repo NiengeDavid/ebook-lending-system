@@ -48,7 +48,7 @@ export default function SearchResults({
               key={book._id}
               className="group" // Added group for hover effects
             >
-              <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow w-[322px] mx-auto group-hover:scale-[1.02] transition-transform duration-200">
+              <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg w-[322px] mx-auto group-hover:scale-[1.02] transition-transform duration-200">
                 <div className="relative w-[322px] h-[450px]">
                   <Image
                     src={book.coverUrl || "/placeholder-book.jpg"}

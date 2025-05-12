@@ -21,10 +21,13 @@ import {
   createBorrowedBookMutation,
   CreateBorrowResponse,
   findUserByAuthIdQuery,
+  getOverdueBooksQuery,
+  OverdueBook,
   SearchBooksParams,
   searchBooksQuery,
 } from "@/sanity/lib/sanity.queries";
 import { createClient, type SanityClient } from "next-sanity";
+import { formatUserReference } from "./utils";
 
 export function getClient(preview?: { token: string }): SanityClient {
   const client = createClient({
@@ -57,6 +60,21 @@ export async function getAllBooks(
   client: SanityClient
 ): Promise<BookSearchResult[]> {
   return (await client.fetch(booksQuery)) || [];
+}
+
+export async function getOverdueBooks(
+  client: SanityClient,
+  userId: string
+): Promise<OverdueBook[]> {
+  try {
+    const result = await client.fetch<OverdueBook[]>(getOverdueBooksQuery, {
+      userRef: formatUserReference(userId),
+    });
+    return result || [];
+  } catch (error) {
+    console.error("Error fetching overdue books:", error);
+    return [];
+  }
 }
 
 export async function getAllSearchBooks(
