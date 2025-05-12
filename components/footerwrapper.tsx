@@ -15,6 +15,7 @@ export default function FooterWrapper() {
     "/books/[slug]",
     "/read",
     "/read/[slug]",
+    "/account/suspended",
   ]; // Add all protected routes here
 
   // Determine which navbar to render based on the route

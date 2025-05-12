@@ -15,6 +15,7 @@ export default function NavbarWrapper() {
     "/books/[slug]",
     "/read",
     "/read/[slug]",
+    "/account/suspended",
   ]; // Add all protected routes here, including dynamic routes
 
   // Determine which navbar to render based on the route
